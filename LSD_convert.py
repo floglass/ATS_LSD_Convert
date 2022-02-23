@@ -167,26 +167,29 @@ def compare_to_database(numeral=None, database=None, ats=None, path=None):
     return latlon
 
 
-def load_database(database_path='D:\\Lite-Step\\ATS-LSD\\ATS_Polygons_SHP_Geographic\\ATS_V4-1_LSD_wLatLon.csv'):
+def load_database(database_path=None):
     """
     Read the Alberta Township System v4.1 database of parcels, and store it in a pandas.DataFrame
     :param database_path: Path to the database
     :return: a pandas.DataFrame of all the parcels of land in the ATS
     """
+    if database_path is None:
+        database_path = 'D:\\Lite-Step\\ATS-LSD\\ATS_Polygons_SHP_Geographic\\ATS_V4-1_LSD_wLatLon.csv'
+
     df = pd.read_csv(database_path, header=0)
     df = df.astype({"PID": str})  # convert column "PID" into a string
     # df['PID'] = df['PID'].str[:10]  # remove last digit of PID string, corresponding to RA
     return df
 
 
-def load_targets(target_list='D:\\Lite-Step\\ATS-LSD\\LSD_examples\\_total_examples.csv'):
+def load_targets(target_list=None):
     """ target_list contains 'LSD' (and optionally 'Trees') for all targets
     :return: a pandas.DataFrame of all targets"""
     targets = pd.read_csv(target_list)  # creates a pandas.DataFrame
     return targets
 
 
-def check_against_batch(target_path='D:\\Lite-Step\\ATS-LSD\\Clearwater_Kaybob.csv'):
+def check_against_batch(target_path=None):
     """
     Take a list of target LSDs (optional with Trees number) and convert it to Latitude Longitude.
     If Trees numbers are present, will also add a column "Trees" and "Name" (format of name: "LSD | Trees") to the
