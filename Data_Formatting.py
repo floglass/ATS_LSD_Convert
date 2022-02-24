@@ -13,7 +13,7 @@ def make_examples(path_list):
     return output_csv
 
 
-def load_shapefile(shp_path='D:\Lite-Step\ATS-LSD\ATS_Polygons_SHP_Geographic\V4-1_LSD.shp'):
+def load_shapefile(shp_path=None):
     """Read a shapefile and load it into a geopandas GeoDataFrame.
     WARNING: the default file is huge (5.7M lines) and will take ~10min to load"""
     gdf = geopandas.read_file(shp_path)
@@ -33,16 +33,16 @@ def format_gdf(geodataframe):
 
 
 def save_to_csv(geodataframe):
-    path = 'D:\Lite-Step\ATS-LSD\ATS_Polygons_SHP_Geographic\ATS_V4-1_LSD_wLatLon.csv'
+    path = 'D:\ATS-LSD\ATS_Polygons_SHP_Geographic\ATS_V4-1_LSD_wLatLon.csv'
     geodataframe.to_csv(path, columns=['PID', 'Latitude', 'Longitude'], index=False)
-    path_shp = 'D:\Lite-Step\ATS-LSD\ATS_Polygons_SHP_Geographic\ATS_V4-1_LSD_wLatLon.shp'
+    path_shp = 'D:\ATS-LSD\ATS_Polygons_SHP_Geographic\ATS_V4-1_LSD_wLatLon.shp'
     geodataframe.to_file(path_shp)
     print('..Files saved')
     return
 
 
 if __name__ == '__main__':
-    os.chdir('D:\Lite-Step\ATS-LSD\LSD_examples')
+    os.chdir('D:\ATS-LSD\LSD_examples')
     csv_list = glob.glob('[!_]*csv')  # exclude any file starting with '_'
     compiled_csv = make_examples(csv_list)
     compiled_csv.to_csv('_total_examples.csv', index=False)

@@ -243,7 +243,8 @@ def check_against_batch(target_path=None):
 
 def main():
     print("Please select the list of LSDs you want to convert:\n"
-          "Accepted format is: LSD - Section - Township - Range   Meridian\n"
+          "The first line should be a header with 'LSD' and optionally 'Trees'\n"
+          "The accepted format of the data is: LSD - Section - Township - Range   Meridian\n"
           "Example: 07-27-72-3 W4\n"
           "Optional: A column 'Trees' can be added with tree numbers for each site.")
     Tk().withdraw()  # keep the root window from appearing (no need of full GUI)
