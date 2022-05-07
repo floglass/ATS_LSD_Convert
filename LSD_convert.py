@@ -51,8 +51,8 @@ Meridian: 4
 Range: 28
 Township: 43
 Section: 2
-LSD:2
-RA: West (RW)
+LSD: 2
+RA: 3 West (RW)
 
 The reformatted dataset is as follow:
 -----------------------------------------
@@ -236,8 +236,10 @@ def check_against_batch(target_path=None):
 
     # save file and return results, dataframe (the whole Alberta Township System), and targets for debugging
     print("..Done")
+    print("Please save the results in the popup window:")
     results_file = asksaveasfilename(title="Please save your results as", filetypes=(("CSV Files", "*.csv"),))
     results.to_csv(results_file, index=False)
+    print("..Done")
     return results, dataframe_load, targets
 
 
