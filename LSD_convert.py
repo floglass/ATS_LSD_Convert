@@ -81,6 +81,7 @@ import re
 from tkinter import Tk
 from tkinter.filedialog import askopenfilename, asksaveasfilename
 from pathlib import Path
+import sqlite3
 
 
 def check_ats(ats=None):
@@ -139,9 +140,40 @@ def ats_to_numeral(ats=None):
     return numeral_out
 
 
+def compare_to_sqlitedb(numeral=None, cur=None):
+    """
+    Use SQLite to query the latitude and longitude of an ATS land parcel.
+    -----
+    1) Query the database for the desired PID (contains PID, NOT equal PID),
+    2) check if PID has duplicates:
+        - if it does, take PID+'0' (no road allowance)
+        - if it does not, take PID
+    3) return [latitude, longitude]
+    :param numeral: output of ats_to_numeral, in format Meridian(1)Range(2)Township(3)Section(2)LSD(2) DOES NOT CONTAIN
+    ROAD ALLOWANCE
+    :param cur: a SQLite3 cursor pointing to the database
+    :return:
+    """
+    if cur is None:
+        path_to_database = 'D:\\Lite-Step\\ATS-LSD\\ATS_Polygons_SHP_Geographic\\ATS_V4_wLatLon.db'
+        con = sqlite3.connect(path_to_database)
+        cur = con.cursor()
+
+    # TODO load a target list and query them all at once
+    cur.execute("SELECT * "
+                "FROM ATS_V4_wLatLon "
+                "WHERE IIF((SELECT COUNT(PID) FROM ATS_V4_wLatLon WHERE SUBSTR(PID, 1, 10) = '{}')>1, "
+                "PID='{}0', PID LIKE '{}_')".format(int(numeral), int(numeral), int(numeral)))
+
+    res = cur.fetchall()
+    latlon = [res[0][1], res[0][2]]
+    return latlon
+
+
 def compare_to_database(numeral=None, database=None, ats=None, path=None):
     """
     Compare "numeral" (PID) to the database's PID, and return [latitude, longitude]
+    Database PID has road allowance in its PID, where "numeral" doesn't. So there can be duplicates!
     :param numeral: output of ats_to_numeral, in format Meridian(1)Range(2)Township(3)Section(2)LSD(2)
     :param database: the ATS polygon v4.1, edited with latitudes and longitudes.
     :param ats: the ATS location, in LSD-section-township-range meridian
@@ -198,7 +230,11 @@ def check_against_batch(target_path=None):
     :return: 'results', 'dataframe_load', 'targets'
     :type: DataFrames
     """
-    dataframe_load = load_database()
+    # dataframe_load = load_database()  # todo remove the requirement of getting the csv in memory
+    path_to_database = 'D:\\Lite-Step\\ATS-LSD\\ATS_Polygons_SHP_Geographic\\ATS_V4_wLatLon.db'  # todo online query?
+    con = sqlite3.connect(path_to_database)
+    cur = con.cursor()
+
     targets = load_targets(target_path)
     current_path = target_path.rsplit('/', maxsplit=1)[0]
     print(current_path)
@@ -219,7 +255,9 @@ def check_against_batch(target_path=None):
         print("--------------------\nProcessing {}..".format(targets.loc[i]))
         numeral = ats_to_numeral(ats)
         print("Comparing {} to database..".format(numeral))
-        latlon_i = compare_to_database(numeral, dataframe_load, ats, current_path)
+        latlon_i = compare_to_sqlitedb(numeral, cur)
+        # latlon_i = compare_to_database(numeral, dataframe_load, ats, current_path)  # change to query SQLite DB
+        # latlon_i = compare_to_sqlitedb(numeral)
         if trees_exist:
             trees = int(targets.loc[i, "Trees"])
             name_i = "{} | {}".format(ats, trees)
@@ -240,7 +278,8 @@ def check_against_batch(target_path=None):
     results_file = asksaveasfilename(title="Please save your results as", filetypes=(("CSV Files", "*.csv"),))
     results.to_csv(results_file, index=False)
     print("..Done")
-    return results, dataframe_load, targets
+    # return results, dataframe_load, targets
+    return results
 
 
 def main():

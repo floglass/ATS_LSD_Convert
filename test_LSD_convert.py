@@ -29,3 +29,19 @@ class Test(TestCase):
         # self.assertEqual(data_loaded.loc[0, 'PID'], '40100101090')
         self.assertEqual(data_loaded.loc[0, 'PID'], '4010010109')
 
+    def test_compare_to_sqlitedb(self):
+        # numeral = 4010010110
+        # numeral = 4050700406
+        numeral = 4030701013  # duplicates (ie: 2x query)
+        latlon= compare_to_sqlitedb(numeral)
+        self.assertAlmostEqual(latlon[0], 55.0513795962817)
+        self.assertAlmostEqual(latlon[1], -110.38353028603642)
+
+    def test_compare_both_methods_to_get_latlon(self):
+        numeral = 4010010109
+        latlon_sqlite = compare_to_sqlitedb(numeral)
+        d = load_database()
+        latlon_csv = compare_to_database(str(numeral), d)
+        self.assertEqual(latlon_sqlite[0], latlon_csv[0])
+        self.assertEqual(latlon_sqlite[1], latlon_csv[1])
+
