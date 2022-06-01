@@ -94,11 +94,19 @@ def check_ats(ats=None):
     LSD [1 to 16]
     """
     # create ranges of acceptable values
-    ats_meridian = [i+1 for i in range(3, 6)]
-    ats_range = [i+1 for i in range(30)]
-    ats_township = [i+1 for i in range(126)]
-    ats_section = [i+1 for i in range(36)]
-    ats_lsd = [i+1 for i in range(16)]
+    ats_meridian = [4, 5, 6]
+    ats_range = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
+                 21, 22, 23, 24, 25, 26, 27, 28, 29, 30]
+    ats_township = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
+                    21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40,
+                    41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60,
+                    61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80,
+                    81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100,
+                    101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116,
+                    117, 118, 119, 120, 121, 122, 123, 124, 125, 126]
+    ats_section = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
+                   21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36]
+    ats_lsd = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
 
     # format the input ATS into a list
     ats_mod = ats.replace(' W', '-')
@@ -230,12 +238,12 @@ def check_against_batch(target_path=None):
     :return: 'results', 'dataframe_load', 'targets'
     :type: DataFrames
     """
-    # dataframe_load = load_database()  # todo remove the requirement of getting the csv in memory
+    # dataframe_load = load_database()
     path_to_database = 'D:\\Lite-Step\\ATS-LSD\\ATS_Polygons_SHP_Geographic\\ATS_V4_wLatLon.db'  # todo online query?
     con = sqlite3.connect(path_to_database)
     cur = con.cursor()
 
-    targets = load_targets(target_path)
+    targets = load_targets(target_path)  # create pandas.DataFrame of target LSDs, and Trees (if exists)
     current_path = target_path.rsplit('/', maxsplit=1)[0]
     print(current_path)
     Path("{}\\Logs".format(current_path)).mkdir(exist_ok=True)  # create a directory "Logs" if it doesn't already exist
