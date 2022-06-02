@@ -1,6 +1,7 @@
 from unittest import TestCase
 
 import pandas
+import time
 
 from LSD_convert import *
 
@@ -38,10 +39,15 @@ class Test(TestCase):
         self.assertAlmostEqual(latlon[1], -110.38353028603642)
 
     def test_compare_both_methods_to_get_latlon(self):
-        numeral = 4010010109
+        numeral = 4030701013
+        start_sqlite = time.perf_counter()
         latlon_sqlite = compare_to_sqlitedb(numeral)
+        stop_sqlite = time.perf_counter()
+        start_db = time.perf_counter()
         d = load_database()
-        latlon_csv = compare_to_database(str(numeral), d)
+        latlon_csv = compare_to_database(str(numeral), d, test=1)
+        stop_db = time.perf_counter()
+        print("SQLITE3 execution: {}, DB execution: {}".format(stop_sqlite-start_sqlite, stop_db-start_db))
         self.assertEqual(latlon_sqlite[0], latlon_csv[0])
         self.assertEqual(latlon_sqlite[1], latlon_csv[1])
 

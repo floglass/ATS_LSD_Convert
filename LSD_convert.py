@@ -52,7 +52,7 @@ Range: 28
 Township: 43
 Section: 2
 LSD: 2
-RA: 3 West (RW)
+RA: 3 West (RW) -- Road Allowance
 
 The reformatted dataset is as follow:
 -----------------------------------------
@@ -61,6 +61,7 @@ Data        Field Length        Columns
 PID         13                  1-12
 Latitude    17                  13-30
 Longitude   19                  31-50
+PID_trunc   10                  51-61
 -----------------------------------------
 
 This script will:
@@ -83,6 +84,21 @@ from tkinter.filedialog import askopenfilename, asksaveasfilename
 from pathlib import Path
 import sqlite3
 
+# Ranges of acceptable values for Meridian, Range, Township, Section, and LSD in the Alberta Township System
+ats_meridian = [4, 5, 6]
+ats_range = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
+             21, 22, 23, 24, 25, 26, 27, 28, 29, 30]
+ats_township = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
+                21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40,
+                41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60,
+                61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80,
+                81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100,
+                101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116,
+                117, 118, 119, 120, 121, 122, 123, 124, 125, 126]
+ats_section = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
+               21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36]
+ats_lsd = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
+
 
 def check_ats(ats=None):
     """Check that ATS is in Alberta
@@ -93,20 +109,6 @@ def check_ats(ats=None):
     Section [1 to 36]
     LSD [1 to 16]
     """
-    # create ranges of acceptable values
-    ats_meridian = [4, 5, 6]
-    ats_range = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
-                 21, 22, 23, 24, 25, 26, 27, 28, 29, 30]
-    ats_township = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
-                    21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40,
-                    41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60,
-                    61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80,
-                    81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100,
-                    101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116,
-                    117, 118, 119, 120, 121, 122, 123, 124, 125, 126]
-    ats_section = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
-                   21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36]
-    ats_lsd = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
 
     # format the input ATS into a list
     ats_mod = ats.replace(' W', '-')
@@ -167,18 +169,15 @@ def compare_to_sqlitedb(numeral=None, cur=None):
         con = sqlite3.connect(path_to_database)
         cur = con.cursor()
 
-    # TODO load a target list and query them all at once
-    cur.execute("SELECT * "
-                "FROM ATS_V4_wLatLon "
-                "WHERE IIF((SELECT COUNT(PID) FROM ATS_V4_wLatLon WHERE SUBSTR(PID, 1, 10) = '{}')>1, "
-                "PID='{}0', PID LIKE '{}_')".format(int(numeral), int(numeral), int(numeral)))
-
+    # query for PID_trunc (10 digits), order by PID asc (so PID+0 is on top if there are duplicates), and take first one
+    cur.execute('SELECT * FROM ATS_V4_wLatLon WHERE PID_trunc = "{}" ORDER BY PID ASC LIMIT 1'.format(numeral))
     res = cur.fetchall()
+
     latlon = [res[0][1], res[0][2]]
     return latlon
 
 
-def compare_to_database(numeral=None, database=None, ats=None, path=None):
+def compare_to_database(numeral=None, database=None, ats=None, path=None, test=0):
     """
     Compare "numeral" (PID) to the database's PID, and return [latitude, longitude]
     Database PID has road allowance in its PID, where "numeral" doesn't. So there can be duplicates!
@@ -186,6 +185,7 @@ def compare_to_database(numeral=None, database=None, ats=None, path=None):
     :param database: the ATS polygon v4.1, edited with latitudes and longitudes.
     :param ats: the ATS location, in LSD-section-township-range meridian
     :param path: path to log folder (containing "duplicates")
+    :param test: switch to remove logging during test
     :return: [latitude, longitude] corresponding to the ATS position
     """
     row = database.loc[database['PID'].str.contains(numeral)]
@@ -193,11 +193,12 @@ def compare_to_database(numeral=None, database=None, ats=None, path=None):
     if len(row) > 1:  # if there are several entries with the same PID (due to road allowance)
         select_pid = '{}0'.format(numeral)  # select PID with Road Allowance == 0
         # save a copy of the duplicates (for verification)
-        print("Multiple elements for PID {} in database, adding to '_duplicates.csv'. \n{}".format(numeral, row))
-        with open('{}\\Logs\\_duplicates.csv'.format(path), 'a') as dpl:
-            dpl.write("{}\n".format(ats))
-            dpl.write(row.to_string(header=False, index=False))
-            dpl.write('\n')  # add a new line after the dataframe
+        if test == 0:
+            print("Multiple elements for PID {} in database, adding to '_duplicates.csv'. \n{}".format(numeral, row))
+            with open('{}\\Logs\\_duplicates.csv'.format(path), 'a+') as dpl:
+                dpl.write("{}\n".format(ats))
+                dpl.write(row.to_string(header=False, index=False))
+                dpl.write('\n')  # add a new line after the dataframe
 
         row = row.loc[row['PID'] == select_pid]  # select the proper PID
 
@@ -291,6 +292,13 @@ def check_against_batch(target_path=None):
 
 
 def main():
+    # Use the ranges of acceptable values of the Alberta Township System
+    global ats_meridian
+    global ats_range
+    global ats_township
+    global ats_section
+    global ats_lsd
+
     print("Please select the list of LSDs you want to convert:\n"
           "The first line should be a header with 'LSD' and optionally 'Trees'\n"
           "The accepted format of the data is: LSD - Section - Township - Range   Meridian\n"
