@@ -169,7 +169,8 @@ def compare_to_sqlitedb(numeral=None, cur=None):
         con = sqlite3.connect(path_to_database)
         cur = con.cursor()
 
-    # query for PID_trunc (10 digits), order by PID asc (so PID+0 is on top if there are duplicates), and take first one
+    # query for PID_trunc (10 digits), order by PID asc,
+    # and take first one (ie: PID0 if duplicates, whatever PID there is otherwise)
     cur.execute('SELECT * FROM ATS_V4_wLatLon WHERE PID_trunc = "{}" ORDER BY PID ASC LIMIT 1'.format(numeral))
     res = cur.fetchall()
 
