@@ -245,7 +245,7 @@ def check_against_batch(target_path=None):
     con = sqlite3.connect(path_to_database)
     cur = con.cursor()
 
-    targets = load_targets(target_path)  # create pandas.DataFrame of target LSDs, and Trees (if exists)
+    targets = load_targets(target_path)  # load "targets" into a pandas.DataFrame
     current_path = target_path.rsplit('/', maxsplit=1)[0]
     print(current_path)
     Path("{}\\Logs".format(current_path)).mkdir(exist_ok=True)  # create a directory "Logs" if it doesn't already exist
@@ -261,9 +261,10 @@ def check_against_batch(target_path=None):
 
     # convert ATS into Lat Lon
     for i in range(len(targets)):
+        line_i = targets.loc[i]  # pd.series
         ats = targets.loc[i, 'LSD']
-        print("--------------------\nProcessing {}..".format(targets.loc[i]))
-        numeral = ats_to_numeral(ats)
+        print("--------------------")
+        numeral = ats_to_numeral(ats)  # PID
         print("Comparing {} to database..".format(numeral))
         latlon_i = compare_to_sqlitedb(numeral, cur)
         # latlon_i = compare_to_database(numeral, dataframe_load, ats, current_path)  # change to query SQLite DB
@@ -271,19 +272,21 @@ def check_against_batch(target_path=None):
         if trees_exist:
             trees = int(targets.loc[i, "Trees"])
             name_i = "{} | {}".format(ats, trees)
-            results[i] = [ats, numeral, latlon_i[0], latlon_i[1], trees, name_i]  # Ats, PID, Lat, Lon, Trees, Name
+            pdresults = pd.Series({'PID': numeral, 'Latitude': latlon_i[0], 'Longitude': latlon_i[1], 'Name': name_i})
+            results[i] = line_i.append(pdresults)
         else:
-            results[i] = [ats, numeral, latlon_i[0], latlon_i[1]]  # Ats, PID, Lat, Lon
+            pdresults = pd.Series({'PID': numeral, 'Latitude': latlon_i[0], 'Longitude': latlon_i[1]})
+            results[i] = line_i.append(pdresults)
+        print("Done:\n{}".format(results[i]))
 
     # Dict to DataFrame
     if trees_exist:
-        results = pd.DataFrame.from_dict(results, orient='index', columns=['LSD', 'PID', 'Latitude', 'Longitude',
-                                                                           'Trees', 'Name'])
+        results = pd.DataFrame.from_dict(results, orient='index')
     else:
-        results = pd.DataFrame.from_dict(results, orient='index', columns=['LSD', 'PID', 'Latitude', 'Longitude'])
+        results = pd.DataFrame.from_dict(results, orient='index')
 
     # save file and return results, dataframe (the whole Alberta Township System), and targets for debugging
-    print("..Done")
+    print("--------------------")
     print("Please save the results in the popup window:")
     results_file = asksaveasfilename(title="Please save your results as", filetypes=(("CSV Files", "*.csv"),))
     results.to_csv(results_file, index=False)
