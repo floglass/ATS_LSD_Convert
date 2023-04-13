@@ -25,6 +25,7 @@ to each LSD by using the position of the centroid of the polygon. The data is in
 and longitudes, but has been reformatted to .csv.
 
 The format of the original file is as follow:
+```
 -----------------------------------------
 Data        Field Length        Columns
 -----------------------------------------
@@ -42,6 +43,7 @@ RA          var
 -----------------------------------------
 Geometry
 -----------------------------------------
+```
 PID should have all the data we need to identify the position in ATS:
 Meridian (1) Range (2) Township (3) Section (2) LSD (2) RA (1)
 Number in bracket is the number of place holders
@@ -54,6 +56,7 @@ LSD: 2
 RA: 3 West (RW) -- Road Allowance
 
 The reformatted dataset is as follow:
+```
 -----------------------------------------
 Data        Field Length        Columns
 -----------------------------------------
@@ -62,6 +65,7 @@ Latitude    17                  13-30
 Longitude   19                  31-50
 PID_trunc   10                  51-61
 -----------------------------------------
+```
 
 Where PID_trunc is the PID without the road allowance digit (not really needed since we take centroid position and the
 error induced by removing the road allowance will not be significant.
