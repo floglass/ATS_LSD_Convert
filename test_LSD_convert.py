@@ -28,7 +28,7 @@ class Test(TestCase):
     def test_load_database(self):
         data_loaded = load_database()
         # self.assertEqual(data_loaded.loc[0, 'PID'], '40100101090')
-        self.assertEqual(data_loaded.loc[0, 'PID'], '4010010109')
+        self.assertEqual(data_loaded.loc[0, 'PID'], '40100101090')
 
     def test_compare_to_sqlitedb(self):
         # numeral = 4010010110

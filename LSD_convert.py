@@ -64,6 +64,9 @@ Longitude   19                  31-50
 PID_trunc   10                  51-61
 -----------------------------------------
 
+Where PID_trunc is the PID without the road allowance digit (not really needed since we take centroid position and the
+error induced by removing the road allowance will not be significant.
+
 This script will:
 Take a batch ASCII file containing ATS positions (one per line)
 In a loop:
@@ -71,10 +74,8 @@ In a loop:
     Convert the ATS format into a PID
     Compare it to the database, and find the match
     Extract the Latitude and Longitude from the database
-    Append to an output file with ATS and Lat Lon
+    Append to an output file with original file (ATS, tree numbers, etc) and Lat Lon
 Export the result in a csv file
-
-TODO: use of python "simplekml" or "pyKML" to directly create the kml (kmz?) file.
 """
 
 import pandas as pd
@@ -237,7 +238,7 @@ def check_against_batch(target_path=None):
     If Trees numbers are present, will also add a column "Trees" and "Name" (format of name: "LSD | Trees") to the
     results for easy integration with Google Maps markers (with my.maps)
     :param target_path: path to target list in .csv form
-    :return: 'results', 'dataframe_load', 'targets'
+    :return: 'results'
     :type: DataFrames
     """
     # dataframe_load = load_database()
@@ -280,10 +281,7 @@ def check_against_batch(target_path=None):
         print("Done:\n{}".format(results[i]))
 
     # Dict to DataFrame
-    if trees_exist:
-        results = pd.DataFrame.from_dict(results, orient='index')
-    else:
-        results = pd.DataFrame.from_dict(results, orient='index')
+    results = pd.DataFrame.from_dict(results, orient='index')
 
     # save file and return results, dataframe (the whole Alberta Township System), and targets for debugging
     print("--------------------")
@@ -304,8 +302,8 @@ def main():
     global ats_lsd
 
     print("Please select the list of LSDs you want to convert:\n"
-          "The first line should be a header with 'LSD' and optionally 'Trees'\n"
-          "The accepted format of the data is: LSD - Section - Township - Range   Meridian\n"
+          "The first line should be a header with at least 'LSD' and optionally 'Trees'\n"
+          "The accepted format of the ATS is: LSD - Section - Township - Range   Meridian\n"
           "Example: 07-27-72-3 W4\n"
           "Optional: A column 'Trees' can be added with tree numbers for each site.")
     Tk().withdraw()  # keep the root window from appearing (no need of full GUI)
