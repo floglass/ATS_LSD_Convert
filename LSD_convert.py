@@ -85,7 +85,7 @@ from tkinter.filedialog import askopenfilename, asksaveasfilename
 from pathlib import Path
 import sqlite3
 
-# Ranges of acceptable values for Meridian, Range, Township, Section, and LSD in the Alberta Township System
+# Acceptable values for Meridian, Range, Township, Section, and LSD in the Alberta Township System
 ats_meridian = [4, 5, 6]
 ats_range = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
              21, 22, 23, 24, 25, 26, 27, 28, 29, 30]
@@ -175,7 +175,11 @@ def compare_to_sqlitedb(numeral=None, cur=None):
     cur.execute('SELECT * FROM ATS_V4_wLatLon WHERE PID_trunc = "{}" ORDER BY PID ASC LIMIT 1'.format(numeral))
     res = cur.fetchall()
 
-    latlon = [res[0][1], res[0][2]]
+    try:
+        latlon = [res[0][1], res[0][2]]
+    except IndexError:
+        latlon = [None, None]
+        print("=!!= Could not find a location with these coordinates. IndexError: list index out of range. =!!=")
     return latlon
 
 
@@ -195,7 +199,7 @@ def compare_to_database(numeral=None, database=None, ats=None, path=None, test=0
     if len(row) > 1:  # if there are several entries with the same PID (due to road allowance)
         select_pid = '{}0'.format(numeral)  # select PID with Road Allowance == 0
         # save a copy of the duplicates (for verification)
-        if test == 0:
+        if test == 0:  # TODO I believe this does nothing now, check
             print("Multiple elements for PID {} in database, adding to '_duplicates.csv'. \n{}".format(numeral, row))
             with open('{}\\Logs\\_duplicates.csv'.format(path), 'a+') as dpl:
                 dpl.write("{}\n".format(ats))
@@ -265,19 +269,20 @@ def check_against_batch(target_path=None):
         line_i = targets.loc[i]  # pd.series
         ats = targets.loc[i, 'LSD']
         print("--------------------")
+        print("Working on {}..".format(ats))
         numeral = ats_to_numeral(ats)  # PID
         print("Comparing {} to database..".format(numeral))
         latlon_i = compare_to_sqlitedb(numeral, cur)
-        # latlon_i = compare_to_database(numeral, dataframe_load, ats, current_path)  # change to query SQLite DB
-        # latlon_i = compare_to_sqlitedb(numeral)
         if trees_exist:
-            trees = int(targets.loc[i, "Trees"])
+            trees = targets.loc[i, "Trees"]
             name_i = "{} | {}".format(ats, trees)
             pdresults = pd.Series({'PID': numeral, 'Latitude': latlon_i[0], 'Longitude': latlon_i[1], 'Name': name_i})
-            results[i] = line_i.append(pdresults)
+            print(pdresults)
+            # results[i] = line_i._append(pdresults)  # .append() is deprecated. Use .concat() instead now
+            results[i] = pd.concat([line_i, pdresults])
         else:
             pdresults = pd.Series({'PID': numeral, 'Latitude': latlon_i[0], 'Longitude': latlon_i[1]})
-            results[i] = line_i.append(pdresults)
+            results[i] = pd.concat([line_i, pdresults])
         print("Done:\n{}".format(results[i]))
 
     # Dict to DataFrame

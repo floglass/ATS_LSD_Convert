@@ -21,9 +21,11 @@ def load_shapefile(shp_path=None):
     return gdf
 
 
-def format_gdf(geodataframe):
+def format_gdf(geodataframe, drop=True):
     """WARNING: On ATS dataset this is very slow! ATS has 5.7 million lines..."""
-    geodataframe = geodataframe.drop(columns=['FILE_NAME', 'TRM', 'M', 'RGE', 'TWP', 'SEC', 'QS', 'LS', 'DESCRIPTOR'])
+    if drop is True:
+        geodataframe = geodataframe.drop(columns=['FILE_NAME', 'TRM', 'M', 'RGE', 'TWP', 'SEC', 'QS', 'LS',
+                                                  'DESCRIPTOR'])
 
     # recompute Latitude and Longitude (!slow)
     centroids = geodataframe.centroid
