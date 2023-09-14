@@ -73,9 +73,9 @@ error induced by removing the road allowance will not be significant.
 This script will:
 Take a batch ASCII file containing ATS positions (one per line)
 In a loop:
-    Check that ATS is in Alberta
-    Convert the ATS format into a PID
-    Compare it to the database, and find the match
-    Extract the Latitude and Longitude from the database
-    Append to an output file with original file (ATS, tree numbers, etc) and Lat Lon
+- Check that ATS is in Alberta
+- Convert the ATS format into a PID
+- Compare it to the database, and find the match
+- Extract the Latitude and Longitude from the database
+- Append to an output file with original file (ATS, tree numbers, etc) and Lat Lon
 Export the result in a csv file
