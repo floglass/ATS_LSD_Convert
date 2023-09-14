@@ -4,7 +4,7 @@ and longitude.
 The Alberta Township System (ATS, based on the Domain Land Survey) identifies plots of lands on a grid using the
 following format:
 
-LSD - Section - Township - Range   Meridian
+(Legal)SubDivision - Section - Township - Range   Meridian
 
 example:
 
